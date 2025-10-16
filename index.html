@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魏专属计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.3em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+        }
+
+        .result-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .result-item h3 {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-item .amount {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .recommendation {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .recommendation.recommend {
+            border-left: 5px solid #27ae60;
+        }
+
+        .recommendation.not-recommend {
+            border-left: 5px solid #e74c3c;
+        }
+
+        .recommend-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .recommend-text {
+            font-size: 1.1em;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>魏专属计算器</h1>
+            <p>天津柱上煌工作室利润分配，助您做出最优决策</p>
+        </div>
+        
+        <div class="content">
+            <form id="profitForm">
+                <div class="form-group">
+                    <label for="orderPrice">接单价 (元)</label>
+                    <input type="number" id="orderPrice" step="0.01" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="miscFee">杂费 (元)</label>
+                    <input type="number" id="miscFee" step="0.01" min="0" value="0">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="workingPeople">干活人数</label>
+                        <input type="number" id="workingPeople" min="1" value="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nonWorkingPeople">不干活人数</label>
+                        <input type="number" id="nonWorkingPeople" min="0" value="0">
+                    </div>
+                </div>
+                
+                <button type="submit" class="calculate-btn">开始计算</button>
+            </form>
+            
+            <div id="resultSection" class="result-section">
+                <div class="result-grid">
+                    <div class="result-item">
+                        <h3>净利润</h3>
+                        <div class="amount" id="netProfit">¥0.00</div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <h3>干活人员分配</h3>
+                        <div class="amount" id="workingAmount">¥0.00</div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <h3>不干活人员分配</h3>
+                        <div class="amount" id="nonWorkingAmount">¥0.00</div>
+                    </div>
+                    
+                    <div class="result-item">
+                        <h3>公账金额</h3>
+                        <div class="amount" id="publicAmount">¥0.00</div>
+                    </div>
+                </div>
+                
+                <div id="recommendation" class="recommendation">
+                    <div class="recommend-icon" id="recommendIcon">👍</div>
+                    <div class="recommend-text" id="recommendText"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 纯前端计算逻辑 - 复制后端算法
+        function calculateProfit(orderPrice, miscFee, workingPeople, nonWorkingPeople) {
+            // 核心算法：接单价 * 0.97 - 杂费
+            const RATE_MULTIPLIER = 0.97;
+            const netProfit = orderPrice * RATE_MULTIPLIER - miscFee;
+            
+            // 分配逻辑
+            const totalPeople = workingPeople + nonWorkingPeople;
+            const workingPersonAmount = totalPeople > 0 ? (netProfit * 0.6) / workingPeople : 0;
+            const nonWorkingPersonAmount = totalPeople > 0 && nonWorkingPeople > 0 ? (netProfit * 0.2) / nonWorkingPeople : 0;
+            const publicAccountAmount = netProfit * 0.2;
+            
+            // 推荐逻辑
+            const profitPerWorkingPerson = workingPersonAmount;
+            const recommendWorking = profitPerWorkingPerson >= 100;
+            const recommendReason = recommendWorking 
+                ? `每人可获得 ¥${profitPerWorkingPerson.toFixed(2)}，建议接单！` 
+                : `每人仅获得 ¥${profitPerWorkingPerson.toFixed(2)}，收益较低，请谨慎考虑。`;
+            
+            return {
+                success: true,
+                data: {
+                    netProfit,
+                    workingPersonAmount,
+                    nonWorkingPersonAmount,
+                    publicAccountAmount,
+                    recommendWorking,
+                    recommendReason
+                }
+            };
+        }
+
+        // 表单提交处理
+        document.getElementById('profitForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                orderPrice: parseFloat(document.getElementById('orderPrice').value),
+                miscFee: parseFloat(document.getElementById('miscFee').value) || 0,
+                workingPeople: parseInt(document.getElementById('workingPeople').value),
+                nonWorkingPeople: parseInt(document.getElementById('nonWorkingPeople').value) || 0
+            };
+            
+            // 前端计算
+            const result = calculateProfit(
+                formData.orderPrice,
+                formData.miscFee,
+                formData.workingPeople,
+                formData.nonWorkingPeople
+            );
+            
+            if (result.success) {
+                displayResult(result.data);
+            }
+        });
+
+        function displayResult(data) {
+            // 更新数值
+            document.getElementById('netProfit').textContent = `¥${data.netProfit.toFixed(2)}`;
+            document.getElementById('workingAmount').textContent = `¥${data.workingPersonAmount.toFixed(2)}`;
+            document.getElementById('nonWorkingAmount').textContent = `¥${data.nonWorkingPersonAmount.toFixed(2)}`;
+            document.getElementById('publicAmount').textContent = `¥${data.publicAccountAmount.toFixed(2)}`;
+            
+            // 更新推荐信息
+            const recommendDiv = document.getElementById('recommendation');
+            const recommendIcon = document.getElementById('recommendIcon');
+            const recommendText = document.getElementById('recommendText');
+            
+            if (data.recommendWorking) {
+                recommendDiv.className = 'recommendation recommend';
+                recommendIcon.textContent = '👍';
+                recommendText.textContent = data.recommendReason;
+            } else {
+                recommendDiv.className = 'recommendation not-recommend';
+                recommendIcon.textContent = '👎';
+                recommendText.textContent = data.recommendReason;
+            }
+            
+            // 显示结果
+            document.getElementById('resultSection').style.display = 'block';
+            
+            // 平滑滚动到结果区域
+            document.getElementById('resultSection').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        // 输入框实时验证
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value < 0) {
+                    this.value = 0;
+                }
+            });
+        });
+
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('魏专属计算器（GitHub Pages版）已加载完成');
+        });
+    </script>
+</body>
+</html>
