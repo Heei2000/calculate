@@ -239,24 +239,73 @@
     </div>
 
     <script>
-        // 纯前端计算逻辑 - 复制后端算法
+        // 纯前端计算逻辑 - 与后端Java算法完全一致
         function calculateProfit(orderPrice, miscFee, workingPeople, nonWorkingPeople) {
-            // 核心算法：接单价 * 0.97 - 杂费
+            // 常量定义 - 与后端保持一致
             const RATE_MULTIPLIER = 0.97;
-            const netProfit = orderPrice * RATE_MULTIPLIER - miscFee;
+            const WORKING_RATIO = 0.8;
+            const NON_WORKING_RATIO = 0.2;
+            const NON_WORKING_LIMIT = 100;
+            const RECOMMEND_THRESHOLD = 30;
             
-            // 分配逻辑
-            const totalPeople = workingPeople + nonWorkingPeople;
-            const workingPersonAmount = totalPeople > 0 ? (netProfit * 0.6) / workingPeople : 0;
-            const nonWorkingPersonAmount = totalPeople > 0 && nonWorkingPeople > 0 ? (netProfit * 0.2) / nonWorkingPeople : 0;
-            const publicAccountAmount = netProfit * 0.2;
+            // 1. 计算纯利润：接单价 * 0.97 - 杂费
+            const netProfit = Math.round((orderPrice * RATE_MULTIPLIER - miscFee) * 100) / 100;
             
-            // 推荐逻辑
-            const profitPerWorkingPerson = workingPersonAmount;
-            const recommendWorking = profitPerWorkingPerson >= 100;
-            const recommendReason = recommendWorking 
-                ? `每人可获得 ¥${profitPerWorkingPerson.toFixed(2)}，建议接单！` 
-                : `每人仅获得 ¥${profitPerWorkingPerson.toFixed(2)}，收益较低，请谨慎考虑。`;
+            // 如果纯利润为负数，直接返回
+            if (netProfit <= 0) {
+                return {
+                    success: true,
+                    data: {
+                        netProfit,
+                        workingPersonAmount: 0,
+                        nonWorkingPersonAmount: 0,
+                        publicAccountAmount: 0,
+                        recommendWorking: false,
+                        recommendReason: "纯利润为负数，不建议接单"
+                    }
+                };
+            }
+            
+            // 2. 计算干活的人总收入：纯利润 * 0.8
+            const workingTotalAmount = Math.round(netProfit * WORKING_RATIO * 100) / 100;
+            
+            // 3. 计算不干活的人总收入：纯利润 * 0.2
+            const nonWorkingTotalAmount = Math.round(netProfit * NON_WORKING_RATIO * 100) / 100;
+            
+            // 4. 计算每人收入
+            const workingPersonAmount = Math.round((workingTotalAmount / workingPeople) * 100) / 100;
+            
+            let nonWorkingPersonAmount = 0;
+            let publicAccountAmount = 0;
+            
+            if (nonWorkingPeople > 0) {
+                const nonWorkingPersonAmountBeforeLimit = Math.round((nonWorkingTotalAmount / nonWorkingPeople) * 100) / 100;
+                
+                // 不干活的人每人最多拿100元，超过部分入公账
+                if (nonWorkingPersonAmountBeforeLimit > NON_WORKING_LIMIT) {
+                    nonWorkingPersonAmount = NON_WORKING_LIMIT;
+                    // 计算入公账金额
+                    const excessPerPerson = nonWorkingPersonAmountBeforeLimit - NON_WORKING_LIMIT;
+                    publicAccountAmount = Math.round(excessPerPerson * nonWorkingPeople * 100) / 100;
+                } else {
+                    nonWorkingPersonAmount = nonWorkingPersonAmountBeforeLimit;
+                }
+            }
+            
+            // 5. 判断是否推荐去干活 - 与后端逻辑完全一致
+            let recommendWorking = true;
+            let recommendReason = "推荐去干活";
+            
+            const difference = Math.abs(workingPersonAmount - nonWorkingPersonAmount);
+            if (difference <= RECOMMEND_THRESHOLD) {
+                recommendWorking = false;
+                recommendReason = `不推荐去干活，收入差距仅${difference.toFixed(2)}元，在30元以内`;
+            } else if (workingPersonAmount > nonWorkingPersonAmount) {
+                recommendReason = `推荐去干活，每人多赚${(workingPersonAmount - nonWorkingPersonAmount).toFixed(2)}元`;
+            } else {
+                recommendReason = `不推荐去干活，干活每人少赚${(nonWorkingPersonAmount - workingPersonAmount).toFixed(2)}元`;
+                recommendWorking = false;
+            }
             
             return {
                 success: true,
