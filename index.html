@@ -266,31 +266,34 @@
                 };
             }
             
-            // 2. 计算干活的人总收入：纯利润 * 0.8
-            const workingTotalAmount = Math.round(netProfit * WORKING_RATIO * 100) / 100;
-            
-            // 3. 计算不干活的人总收入：纯利润 * 0.2
+            // 2. 计算不干活的人总收入：纯利润 * 0.2
             const nonWorkingTotalAmount = Math.round(netProfit * NON_WORKING_RATIO * 100) / 100;
             
-            // 4. 计算每人收入
-            const workingPersonAmount = Math.round((workingTotalAmount / workingPeople) * 100) / 100;
-            
             let nonWorkingPersonAmount = 0;
-            let publicAccountAmount = 0;
+            let excessToWorking = 0; // 超过100元限制的部分，要重新分给干活的人
             
             if (nonWorkingPeople > 0) {
                 const nonWorkingPersonAmountBeforeLimit = Math.round((nonWorkingTotalAmount / nonWorkingPeople) * 100) / 100;
                 
-                // 不干活的人每人最多拿100元，超过部分入公账
+                // 不干活的人每人最多拿100元，超过部分重新分给干活的人
                 if (nonWorkingPersonAmountBeforeLimit > NON_WORKING_LIMIT) {
                     nonWorkingPersonAmount = NON_WORKING_LIMIT;
-                    // 计算入公账金额
+                    // 计算超过限制的总金额，这部分要重新分给干活的人
                     const excessPerPerson = nonWorkingPersonAmountBeforeLimit - NON_WORKING_LIMIT;
-                    publicAccountAmount = Math.round(excessPerPerson * nonWorkingPeople * 100) / 100;
+                    excessToWorking = Math.round(excessPerPerson * nonWorkingPeople * 100) / 100;
                 } else {
                     nonWorkingPersonAmount = nonWorkingPersonAmountBeforeLimit;
                 }
             }
+            
+            // 3. 计算干活的人总收入：纯利润 * 0.8 + 不干活的人超过100元的部分
+            const workingTotalAmount = Math.round((netProfit * WORKING_RATIO + excessToWorking) * 100) / 100;
+            
+            // 4. 计算干活的人每人收入
+            const workingPersonAmount = Math.round((workingTotalAmount / workingPeople) * 100) / 100;
+            
+            // 公账金额设为0，因为超过部分已经重新分给干活的人了
+            const publicAccountAmount = 0;
             
             // 5. 判断是否推荐去干活 - 与后端逻辑完全一致
             let recommendWorking = true;
