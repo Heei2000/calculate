@@ -170,10 +170,10 @@
             font-size: 1.1em;
             color: #2c3e50;
             line-height: 1.6;
-        }
-    </style>
-</head>
-<body>
+const RATE_MULTIPLIER = (CONFIG && CONFIG.RATE_MULTIPLIER) || 0.97;
+const WORKING_RATIO = (CONFIG && CONFIG.WORKING_RATIO) || 0.8;
+const NON_WORKING_RATIO = (CONFIG && CONFIG.NON_WORKING_RATIO) || 0.2;
+const NON_WORKING_LIMIT = (CONFIG && CONFIG.NON_WORKING_LIMIT) || 100;
     <div class="container">
         <div class="header">
             <h1>魏专属计算器</h1>
