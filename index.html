@@ -347,7 +347,7 @@
             }
         });
 
-        function displayResult(data) {
+document.getElementById('netProfit').textContent = `¥${(data.netProfit || 0).toFixed(2)}`
             // 更新数值
             document.getElementById('netProfit').textContent = `¥${data.netProfit.toFixed(2)}`;
             document.getElementById('workingAmount').textContent = `¥${data.workingPersonAmount.toFixed(2)}`;
